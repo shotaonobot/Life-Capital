@@ -127,6 +127,17 @@ function updateMetric(id, value, passed, result, progress) {
     Math.max(0, Math.min(progress, 100)) + "%";
 }
 
+
+function updateQuickStat(id, value, passed) {
+  const element = document.querySelector("#quick-" + id);
+  if (!element) {
+    return;
+  }
+  element.classList.toggle("is-pass", passed);
+  element.classList.toggle("is-fail", !passed);
+  element.querySelector("strong").textContent = value;
+}
+
 function updateDashboard() {
   const summary = calculateSummary(state.days);
   totalHoursElement.textContent = formatNumber(summary.totalHours);
@@ -145,6 +156,11 @@ function updateDashboard() {
   } else {
     allocationStatusElement.textContent = formatHours(Math.abs(summary.remainingHours)) + " 超過";
   }
+
+  updateQuickStat("total", formatHours(summary.totalHours), summary.allocationComplete);
+  updateQuickStat("investment", formatPercent(summary.investmentRate), summary.goals.investment);
+  updateQuickStat("waste", formatPercent(summary.wasteRate), summary.goals.waste);
+  updateQuickStat("sleep", formatHours(summary.categoryTotals.sleep), summary.goals.sleep);
 
   const investmentGap = Math.max(0, WEEK_HOURS * 0.2 - summary.categoryTotals.investment);
   updateMetric(

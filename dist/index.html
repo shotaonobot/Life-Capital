@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="description" content="一週間168時間を投資・消費・浪費・睡眠に配分し、目標を即時判定する個人用ダッシュボード。">
   <meta name="theme-color" content="#111827">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23111827'/%3E%3Cpath d='M18 15v34h22v-9H27V15z' fill='%230AA678'/%3E%3Cpath d='M35 15h11v9H35z' fill='white'/%3E%3C/svg%3E">
   <title>Life Capital — 168時間を資本にする</title>
   <link rel="stylesheet" href="./styles.css">
 </head>
@@ -28,9 +29,63 @@
       <section class="intro">
         <div>
           <p class="eyebrow">YOUR WEEK, MEASURED WITH INTENTION</p>
-          <h1>一週間を、<br><span>資本として見る。</span></h1>
+          <h1>一週間を、<span>資本として見る。</span></h1>
         </div>
         <p class="intro-copy">168時間の使い方を入力すると、投資・浪費・睡眠の基準をその場で判定。週合計でも、曜日ごとでも編集できます。</p>
+      </section>
+
+      <section class="editor-section" aria-labelledby="editor-title">
+        <div class="editor-heading">
+          <div>
+            <p class="section-kicker">PLAN YOUR 168 HOURS</p>
+            <h2 id="editor-title">時間を割り振る</h2>
+          </div>
+
+          <div class="view-tabs" role="tablist" aria-label="入力方法">
+            <button type="button" role="tab" id="weekly-tab" data-mode="weekly" aria-controls="editor-panel">
+              週合計
+            </button>
+            <button type="button" role="tab" id="daily-tab" data-mode="daily" aria-controls="editor-panel">
+              曜日別
+            </button>
+          </div>
+        </div>
+
+        <div class="editor-note">
+          <span aria-hidden="true">↕</span>
+          <p><strong>入力は双方向で連動します。</strong> 週合計の変更は現在の比率で7日に配分され、曜日別の変更は週合計へすぐ反映されます。</p>
+        </div>
+
+
+        <div class="quick-stats" aria-label="今週の即時判定" aria-live="polite">
+          <article class="quick-stat is-pass" id="quick-total">
+            <span>入力合計</span>
+            <strong>168h</strong>
+            <small>168hで完了</small>
+          </article>
+          <article class="quick-stat is-fail" id="quick-investment">
+            <span>投資率</span>
+            <strong>0.0%</strong>
+            <small>20%以上</small>
+          </article>
+          <article class="quick-stat is-pass" id="quick-waste">
+            <span>浪費率</span>
+            <strong>0.0%</strong>
+            <small>5%以下</small>
+          </article>
+          <article class="quick-stat is-pass" id="quick-sleep">
+            <span>睡眠</span>
+            <strong>49h</strong>
+            <small>49h以上</small>
+          </article>
+        </div>
+
+        <div id="editor-panel" role="tabpanel" aria-live="polite"></div>
+
+        <div class="editor-footer">
+          <p><span class="privacy-mark" aria-hidden="true">●</span> 入力データはサーバーへ送らず、この端末のブラウザだけに保存します。</p>
+          <button class="reset-button" id="reset-button" type="button">初期状態に戻す</button>
+        </div>
       </section>
 
       <section class="overview" aria-labelledby="overview-title">
@@ -87,35 +142,6 @@
         </div>
       </section>
 
-      <section class="editor-section" aria-labelledby="editor-title">
-        <div class="editor-heading">
-          <div>
-            <p class="section-kicker">PLAN YOUR 168 HOURS</p>
-            <h2 id="editor-title">時間を割り振る</h2>
-          </div>
-
-          <div class="view-tabs" role="tablist" aria-label="入力方法">
-            <button type="button" role="tab" id="weekly-tab" data-mode="weekly" aria-controls="editor-panel">
-              週合計
-            </button>
-            <button type="button" role="tab" id="daily-tab" data-mode="daily" aria-controls="editor-panel">
-              曜日別
-            </button>
-          </div>
-        </div>
-
-        <div class="editor-note">
-          <span aria-hidden="true">↕</span>
-          <p><strong>入力は双方向で連動します。</strong> 週合計の変更は現在の比率で7日に配分され、曜日別の変更は週合計へすぐ反映されます。</p>
-        </div>
-
-        <div id="editor-panel" role="tabpanel" aria-live="polite"></div>
-
-        <div class="editor-footer">
-          <p><span class="privacy-mark" aria-hidden="true">●</span> 入力データはサーバーへ送らず、この端末のブラウザだけに保存します。</p>
-          <button class="reset-button" id="reset-button" type="button">初期状態に戻す</button>
-        </div>
-      </section>
     </main>
 
     <footer class="site-footer">

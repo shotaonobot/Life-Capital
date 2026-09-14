@@ -1,0 +1,16 @@
+{
+  "name": "life-capital",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "168 hours personal time allocation dashboard",
+  "scripts": {
+    "build": "npm run check",
+    "test": "node --test tests/*.test.mjs",
+    "check": "node scripts/check.mjs",
+    "verify": "npm run test && npm run check"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

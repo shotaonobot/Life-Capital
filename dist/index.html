@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="一週間168時間を投資・消費・浪費・睡眠に配分し、目標を即時判定する個人用ダッシュボード。">
+  <meta name="theme-color" content="#111827">
+  <title>Life Capital — 168時間を資本にする</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="Life Capital ホーム">
+        <span class="brand-mark" aria-hidden="true">LC</span>
+        <span>
+          <strong>Life Capital</strong>
+          <small>TIME IS YOUR FIRST CAPITAL</small>
+        </span>
+      </a>
+      <div class="save-state" id="save-state" role="status" aria-live="polite">
+        <span class="save-dot" aria-hidden="true"></span>
+        <span>端末内に保存済み</span>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="intro">
+        <div>
+          <p class="eyebrow">YOUR WEEK, MEASURED WITH INTENTION</p>
+          <h1>一週間を、<br><span>資本として見る。</span></h1>
+        </div>
+        <p class="intro-copy">168時間の使い方を入力すると、投資・浪費・睡眠の基準をその場で判定。週合計でも、曜日ごとでも編集できます。</p>
+      </section>
+
+      <section class="overview" aria-labelledby="overview-title">
+        <h2 class="sr-only" id="overview-title">今週のサマリー</h2>
+
+        <article class="allocation-card">
+          <div class="donut-wrap">
+            <div class="donut-chart" id="donut-chart" role="img" aria-label="今週の時間配分">
+              <div class="donut-center">
+                <strong id="total-hours">168</strong>
+                <span>/ 168h</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="allocation-copy">
+            <p class="section-kicker">WEEKLY ALLOCATION</p>
+            <h2>今週の内訳</h2>
+            <p class="allocation-status is-complete" id="allocation-status">168時間ぴったり</p>
+            <div class="legend" id="legend"></div>
+          </div>
+        </article>
+
+        <div class="metrics" aria-live="polite">
+          <article class="metric-card" id="metric-investment">
+            <div class="metric-heading">
+              <span>投資率</span>
+              <span class="metric-badge">目標 20%以上</span>
+            </div>
+            <strong class="metric-value" id="investment-value">0.0%</strong>
+            <p class="metric-result" id="investment-result">あと33.6h</p>
+            <div class="metric-track"><span id="investment-track"></span></div>
+          </article>
+
+          <article class="metric-card" id="metric-waste">
+            <div class="metric-heading">
+              <span>浪費率</span>
+              <span class="metric-badge">上限 5%以下</span>
+            </div>
+            <strong class="metric-value" id="waste-value">0.0%</strong>
+            <p class="metric-result" id="waste-result">上限内</p>
+            <div class="metric-track"><span id="waste-track"></span></div>
+          </article>
+
+          <article class="metric-card" id="metric-sleep">
+            <div class="metric-heading">
+              <span>睡眠</span>
+              <span class="metric-badge">目標 49h以上</span>
+            </div>
+            <strong class="metric-value" id="sleep-value">49h</strong>
+            <p class="metric-result" id="sleep-result">目標達成</p>
+            <div class="metric-track"><span id="sleep-track"></span></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="editor-section" aria-labelledby="editor-title">
+        <div class="editor-heading">
+          <div>
+            <p class="section-kicker">PLAN YOUR 168 HOURS</p>
+            <h2 id="editor-title">時間を割り振る</h2>
+          </div>
+
+          <div class="view-tabs" role="tablist" aria-label="入力方法">
+            <button type="button" role="tab" id="weekly-tab" data-mode="weekly" aria-controls="editor-panel">
+              週合計
+            </button>
+            <button type="button" role="tab" id="daily-tab" data-mode="daily" aria-controls="editor-panel">
+              曜日別
+            </button>
+          </div>
+        </div>
+
+        <div class="editor-note">
+          <span aria-hidden="true">↕</span>
+          <p><strong>入力は双方向で連動します。</strong> 週合計の変更は現在の比率で7日に配分され、曜日別の変更は週合計へすぐ反映されます。</p>
+        </div>
+
+        <div id="editor-panel" role="tabpanel" aria-live="polite"></div>
+
+        <div class="editor-footer">
+          <p><span class="privacy-mark" aria-hidden="true">●</span> 入力データはサーバーへ送らず、この端末のブラウザだけに保存します。</p>
+          <button class="reset-button" id="reset-button" type="button">初期状態に戻す</button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>Life Capital</span>
+      <span>168 HOURS. MAKE THEM COUNT.</span>
+    </footer>
+  </div>
+
+  <noscript>Life Capitalを使うにはJavaScriptを有効にしてください。</noscript>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

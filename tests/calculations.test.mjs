@@ -22,14 +22,14 @@ function blankDays() {
   }));
 }
 
-test("the default week contains exactly 168 hours", () => {
+test("a new week starts unrecorded without fabricated consumption or sleep", () => {
   const summary = calculateSummary(createDefaultDays());
 
-  assert.equal(summary.totalHours, 168);
-  assert.equal(summary.remainingHours, 0);
-  assert.equal(summary.allocationComplete, true);
-  assert.equal(summary.dailyComplete, true);
-  assert.equal(summary.categoryTotals.sleep, 49);
+  assert.equal(summary.totalHours, 0);
+  assert.equal(summary.remainingHours, 168);
+  assert.equal(summary.allocationComplete, false);
+  assert.equal(summary.dailyComplete, false);
+  assert.equal(summary.categoryTotals.sleep, 0);
 });
 
 test("goal boundaries pass at exactly 20%, 5%, and 49 hours", () => {
@@ -114,6 +114,8 @@ test("daily editing updates only the selected day and category", () => {
 
 test("a daily edit over 24 hours is rejected and clears the last field", () => {
   const original = createDefaultDays();
+  original[0].consumption = 17;
+  original[0].sleep = 7;
   const result = trySetDayCategory(original, 0, "investment", 1);
 
   assert.equal(result.accepted, false);
@@ -124,11 +126,32 @@ test("a daily edit over 24 hours is rejected and clears the last field", () => {
 
 test("a daily edit at exactly 24 hours is accepted", () => {
   const original = createDefaultDays();
+  original[0].sleep = 7;
   const result = trySetDayCategory(original, 0, "consumption", 17);
 
   assert.equal(result.accepted, true);
   assert.equal(result.attemptedTotal, 24);
   assert.equal(result.days[0].consumption, 17);
+});
+
+test("25 is rejected before clamping even in a completely empty day", () => {
+  const result = trySetDayCategory(blankDays(), 0, "investment", "25");
+  assert.equal(result.accepted, false);
+  assert.equal(result.attemptedTotal, 25);
+  assert.equal(result.days[0].investment, 0);
+});
+
+test("invalid fields, negatives, exponent notation and NaN are rejected", () => {
+  for (const value of ["-1", "1e2", "Infinity", "oops", "2 hours"]) {
+    assert.equal(trySetDayCategory(blankDays(), 0, "investment", value).accepted, false);
+  }
+  assert.equal(trySetDayCategory(blankDays(), 99, "investment", 1).accepted, false);
+  assert.equal(trySetDayCategory(blankDays(), 0, "unknown", 1).accepted, false);
+});
+
+test("clearing an input immediately clears its recorded hours", () => {
+  const days = blankDays(); days[2].sleep = 7;
+  assert.equal(trySetDayCategory(days, 2, "sleep", "").days[2].sleep, 0);
 });
 
 test("week dates run from Monday through Sunday across month boundaries", () => {

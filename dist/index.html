@@ -3,153 +3,59 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="一週間168時間を投資・消費・浪費・睡眠に配分し、目標を即時判定する個人用ダッシュボード。">
+  <meta name="description" content="自分のための時間を取り戻す。日々の記録、168時間の振り返り、任意のタイマーで大切な時間を見つけるLife Capital。">
   <meta name="theme-color" content="#111827">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23111827'/%3E%3Cpath d='M18 15v34h22v-9H27V15z' fill='%230AA678'/%3E%3Cpath d='M35 15h11v9H35z' fill='white'/%3E%3C/svg%3E">
-  <title>Life Capital — 168時間を資本にする</title>
+  <title>Life Capital — 自分の時間を取り戻す</title>
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
+  <a class="skip-link" href="#main">記録へ移動</a>
   <div class="app-shell">
-    <header class="topbar">
-      <a class="brand" href="#top" aria-label="Life Capital ホーム">
-        <span class="brand-mark" aria-hidden="true">LC</span>
-        <span>
-          <strong>Life Capital</strong>
-          <small>TIME IS YOUR FIRST CAPITAL</small>
-        </span>
-      </a>
-      <div class="save-state" id="save-state" role="status" aria-live="polite">
-        <span class="save-dot" aria-hidden="true"></span>
-        <span>端末内に保存済み</span>
-      </div>
-    </header>
-
-    <main id="top">
-      <section class="intro">
-        <div>
-          <p class="eyebrow">YOUR WEEK, MEASURED WITH INTENTION</p>
-          <h1>一週間を、<span>資本として見る。</span></h1>
-        </div>
-        <p class="intro-copy">曜日ごとに168時間の使い方を入力すると、投資・浪費・睡眠の基準と週合計をその場で確認できます。</p>
+    <header class="topbar"><a class="brand" href="#record"><span class="brand-mark" aria-hidden="true">LC</span><strong>Life Capital</strong></a><span id="save-state" class="save-state" role="status">読み込み中…</span></header>
+    <nav class="main-nav" aria-label="メインメニュー"><button type="button" data-page="record" aria-current="page">記録する</button><button type="button" data-page="review">振り返る</button><button type="button" data-page="settings">設定</button></nav>
+    <main id="main">
+      <div id="load-notice" class="notice" role="status" hidden></div>
+      <div id="reminder-banner" class="notice reminder-banner" hidden><span>ここまで、何をしていた？ 少しだけ記録しよう。</span><button type="button" id="reminder-record">記録する</button><button type="button" id="reminder-dismiss">あとで</button></div>
+      <section id="page-record" data-screen="record">
+        <div class="page-heading"><div><p class="eyebrow" id="current-date"></p><h1>自分の時間を、取り戻そう。</h1></div><button type="button" class="text-button" id="jump-today">今日へ</button></div>
+        <section class="quick-entry surface" aria-labelledby="quick-title">
+          <div class="section-heading"><h2 id="quick-title">いままでの時間を記録</h2><span class="muted">まとめてでも、大丈夫。</span></div>
+          <form id="quick-form"><div class="quick-fields">
+            <label>日付<input type="date" id="quick-date" required min="2000-01-01" max="2100-12-31"></label>
+            <label>時間の使い方<select id="quick-category"><option value="investment">投資 · 学び・挑戦</option><option value="consumption">消費 · 生活・遊び・休息</option><option value="waste">浪費 · つい過ぎた時間</option><option value="sleep">睡眠</option></select></label>
+            <label>何分？<input id="quick-minutes" type="text" inputmode="decimal" value="30" required aria-describedby="quick-hint"></label><button type="submit" class="primary">記録に追加</button>
+          </div><div class="quick-bottom"><div class="presets" aria-label="記録する分数"><button type="button" data-minutes="15">15分</button><button type="button" data-minutes="30">30分</button><button type="button" data-minutes="60">1時間</button><button type="button" data-minutes="120">2時間</button></div><small id="quick-hint">入力済みの時間に足します。合計の修正は曜日別から。</small></div></form>
+          <p id="quick-error" class="error-text" role="alert" hidden></p>
+          <details class="timer-details"><summary>タイマーで記録したいとき</summary><div class="timer-controls"><label>使い方<select id="timer-category"><option value="investment">投資</option><option value="consumption">消費</option><option value="waste">浪費</option><option value="sleep">睡眠</option></select></label><output id="timer-elapsed" aria-label="経過時間">00:00:00</output><button type="button" id="timer-toggle">計測を始める</button><button type="button" id="timer-discard" class="text-button" hidden>破棄</button></div><p class="muted">画面を閉じても経過時間を保持します。終了すると日付ごとに加算します。</p><p id="timer-error" class="error-text" role="alert" hidden></p></details>
+        </section>
+        <section class="editor-section" aria-labelledby="editor-title">
+          <div class="week-toolbar"><div class="week-navigation"><button type="button" data-week-shift="-1" aria-label="前の週">‹</button><div><h2 id="editor-title">今週の168時間</h2><span id="week-label"></span></div><button type="button" data-week-shift="1" aria-label="次の週">›</button></div><div class="view-tabs" role="tablist" aria-label="時間の表示"><button type="button" role="tab" id="daily-tab" data-mode="daily" aria-controls="editor-panel" aria-selected="true">曜日別</button><button type="button" role="tab" id="weekly-tab" data-mode="weekly" aria-controls="editor-panel" aria-selected="false" tabindex="-1">週合計</button></div></div>
+          <div class="quick-stats" aria-label="週の基準判定"><article class="quick-stat" id="quick-total"><span>記録済み</span><strong>0h</strong><small>残り168h</small></article><article class="quick-stat" id="quick-investment"><span>投資率</span><strong>0%</strong><small>基準 20%以上</small></article><article class="quick-stat" id="quick-waste"><span>浪費率</span><strong>0%</strong><small>基準 5%以下</small></article><article class="quick-stat" id="quick-sleep"><span>睡眠</span><strong>0h</strong><small>基準 49h以上</small></article></div>
+          <p id="week-context" class="muted"></p><div id="editor-panel" role="tabpanel" aria-labelledby="daily-tab"></div>
+          <p class="editor-note">数字をタップすると全選択。時間は小数で入力できます（30分 = 0.5h）。週合計は自動計算されます。</p>
+          <details class="category-guide"><summary>どれに記録すればいい？</summary><p><strong>投資：</strong>勉強、運動、創作など、自分が大切にしたい未来につながる時間。</p><p><strong>消費：</strong>仕事、授業、食事、家事、友達との時間、遊びや休息。</p><p><strong>浪費：</strong>自分では望んでいなかったのに過ぎた時間。楽しんだ休息を浪費にする必要はありません。</p><p><strong>睡眠：</strong>眠っていた時間。基準は一週間を振り返る目安です。</p></details>
+        </section>
       </section>
-
-      <section class="editor-section" aria-labelledby="editor-title">
-        <div class="editor-heading">
-          <div>
-            <p class="section-kicker">PLAN YOUR 168 HOURS</p>
-            <h2 id="editor-title">時間を割り振る</h2>
-          </div>
-
-          <div class="view-tabs" role="tablist" aria-label="入力方法">
-            <button type="button" role="tab" id="weekly-tab" data-mode="weekly" aria-controls="editor-panel">
-              週合計
-            </button>
-            <button type="button" role="tab" id="daily-tab" data-mode="daily" aria-controls="editor-panel">
-              曜日別
-            </button>
-          </div>
-        </div>
-
-        <div class="editor-note">
-          <span aria-hidden="true">↕</span>
-          <p><strong>編集は「曜日別」から。</strong> 週合計は曜日別の入力から自動計算されます。各曜日は合計24時間まで入力できます。</p>
-        </div>
-
-
-        <div class="quick-stats" aria-label="今週の即時判定" aria-live="polite">
-          <article class="quick-stat is-pass" id="quick-total">
-            <span>入力合計</span>
-            <strong>168h</strong>
-            <small>168hで完了</small>
-          </article>
-          <article class="quick-stat is-fail" id="quick-investment">
-            <span>投資率</span>
-            <strong>0.0%</strong>
-            <small>20%以上</small>
-          </article>
-          <article class="quick-stat is-pass" id="quick-waste">
-            <span>浪費率</span>
-            <strong>0.0%</strong>
-            <small>5%以下</small>
-          </article>
-          <article class="quick-stat is-pass" id="quick-sleep">
-            <span>睡眠</span>
-            <strong>49h</strong>
-            <small>49h以上</small>
-          </article>
-        </div>
-
-        <div id="editor-panel" role="tabpanel" aria-live="polite"></div>
-
-        <div class="editor-footer">
-          <p><span class="privacy-mark" aria-hidden="true">●</span> 入力データはサーバーへ送らず、この端末のブラウザだけに保存します。</p>
-          <button class="reset-button" id="reset-button" type="button">初期状態に戻す</button>
+      <section id="page-review" data-screen="review" hidden>
+        <div class="page-heading"><div><p class="eyebrow">YOUR WEEK</p><h1>少しずつ、大切なほうへ。</h1></div></div>
+        <div class="week-toolbar"><div class="week-navigation"><button type="button" data-week-shift="-1" aria-label="振り返る週を前へ">‹</button><h2 id="review-week-label"></h2><button type="button" data-week-shift="1" aria-label="振り返る週を次へ">›</button></div></div>
+        <div class="review-grid"><article class="surface allocation-card"><div id="donut-chart" class="donut-chart" role="img"><div><strong id="total-hours">0</strong><span>/ 168h</span></div></div><div><h2>一週間の内訳</h2><p id="allocation-status"></p><div id="legend"></div></div></article><article class="surface"><p class="eyebrow">大切にした時間</p><h2 id="review-investment">0h</h2><p id="review-comparison"></p><p id="review-goal" class="muted"></p><button type="button" id="share-week">週の数字を共有</button><p id="share-result" role="status" class="muted"></p></article></div>
+        <form id="review-form" class="surface reflection"><h2>ひとこと振り返り</h2><label>今週、よかったこと<textarea id="review-proud" maxlength="500" rows="3" placeholder="小さなことでも。"></textarea></label><label>来週、何に時間を使いたい？<textarea id="review-next" maxlength="500" rows="3" placeholder="例：寝る前の15分を読書に。"></textarea></label><p class="muted">入力すると、この週の振り返りとして保存します。</p></form>
+        <section class="surface history-section"><h2>これまでの記録</h2><div id="week-history"></div></section>
+      </section>
+      <section id="page-settings" data-screen="settings" hidden>
+        <div class="page-heading"><h1>自分に合うペースで。</h1></div><div class="settings-grid">
+          <section class="surface"><h2>大切にしたいこと</h2><label for="personal-goal">取り戻した時間を、何に使う？</label><input id="personal-goal" maxlength="80" placeholder="例：英語を学ぶ、友達と会う、よく眠る"><p class="muted">決まっていなければ空欄で大丈夫です。</p></section>
+          <section class="surface"><h2>記録の声かけ</h2><p id="notification-mode"></p><form id="reminders-form"><label class="check-label"><input type="checkbox" id="reminders-enabled">定期的に声をかける</label><label>間隔<select id="reminders-interval"><option value="30">30分ごと</option><option value="60">1時間ごと</option><option value="90">1時間30分ごと</option><option value="120">2時間ごと</option><option value="180">3時間ごと</option><option value="240">4時間ごと</option></select></label><div class="time-range"><label>開始<input type="time" id="reminders-start" required value="09:00"></label><span>〜</span><label>終了<input type="time" id="reminders-end" required value="21:00"></label></div><p class="muted">開始から設定した間隔が経つと声をかけます。時間帯の外ではお休みします。</p><button type="submit" class="primary" id="save-reminders">声かけ設定を保存</button><p id="reminder-status" role="status"></p></form></section>
+          <section class="surface"><h2>データの持ち出し・復元</h2><p>ログインは不要です。記録はこの端末に保存され、友達の記録とは分かれます。別の端末へはバックアップを移してください。</p><div class="stack-actions"><button type="button" id="export-data">バックアップを書き出す</button><label class="file-button">バックアップを読み込む<input type="file" id="import-data" accept=".json,application/json"></label></div><p id="backup-status" role="status"></p><p class="muted">ブラウザのデータ消去やアプリの削除に備えて、定期的な書き出しをおすすめします。</p><button type="button" class="danger-button" id="delete-data">この端末の全データを削除</button></section>
+          <section class="surface"><h2>プライバシー</h2><p>時間の記録・目標・振り返りは、Life Capitalのサーバーへ送信しません。広告や行動分析のための追跡機能はありません。</p><p>共有は自分でボタンを押したときだけ。週の数字を共有しても、目標や振り返りの文章は含めません。</p><p><a href="./privacy.html">プライバシーポリシー</a></p></section>
         </div>
       </section>
-
-      <section class="overview" aria-labelledby="overview-title">
-        <h2 class="sr-only" id="overview-title">今週のサマリー</h2>
-
-        <article class="allocation-card">
-          <div class="donut-wrap">
-            <div class="donut-chart" id="donut-chart" role="img" aria-label="今週の時間配分">
-              <div class="donut-center">
-                <strong id="total-hours">168</strong>
-                <span>/ 168h</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="allocation-copy">
-            <p class="section-kicker">WEEKLY ALLOCATION</p>
-            <h2>今週の内訳</h2>
-            <p class="allocation-status is-complete" id="allocation-status">168時間ぴったり</p>
-            <div class="legend" id="legend"></div>
-          </div>
-        </article>
-
-        <div class="metrics" aria-live="polite">
-          <article class="metric-card" id="metric-investment">
-            <div class="metric-heading">
-              <span>投資率</span>
-              <span class="metric-badge">目標 20%以上</span>
-            </div>
-            <strong class="metric-value" id="investment-value">0.0%</strong>
-            <p class="metric-result" id="investment-result">あと33.6h</p>
-            <div class="metric-track"><span id="investment-track"></span></div>
-          </article>
-
-          <article class="metric-card" id="metric-waste">
-            <div class="metric-heading">
-              <span>浪費率</span>
-              <span class="metric-badge">上限 5%以下</span>
-            </div>
-            <strong class="metric-value" id="waste-value">0.0%</strong>
-            <p class="metric-result" id="waste-result">上限内</p>
-            <div class="metric-track"><span id="waste-track"></span></div>
-          </article>
-
-          <article class="metric-card" id="metric-sleep">
-            <div class="metric-heading">
-              <span>睡眠</span>
-              <span class="metric-badge">目標 49h以上</span>
-            </div>
-            <strong class="metric-value" id="sleep-value">49h</strong>
-            <p class="metric-result" id="sleep-result">目標達成</p>
-            <div class="metric-track"><span id="sleep-track"></span></div>
-          </article>
-        </div>
-      </section>
-
     </main>
-
-    <footer class="site-footer">
-      <span>Life Capital</span>
-      <span>168 HOURS. MAKE THEM COUNT.</span>
-    </footer>
+    <footer class="site-footer"><span>Life Capital</span><span>休む時間も、あなたの資本。</span></footer>
   </div>
-
+  <div id="toast" class="toast" role="status" hidden><span></span><button type="button" id="undo-action" hidden>取り消す</button><button type="button" id="dismiss-toast" aria-label="メッセージを閉じる">×</button></div>
   <noscript>Life Capitalを使うにはJavaScriptを有効にしてください。</noscript>
   <script type="module" src="./app.js"></script>
 </body>

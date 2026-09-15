@@ -61,9 +61,9 @@ export function createDefaultDays() {
   return DAY_LIST.map((day) => ({
     id: day.id,
     investment: 0,
-    consumption: 17,
+    consumption: 0,
     waste: 0,
-    sleep: 7
+    sleep: 0
   }));
 }
 
@@ -143,11 +143,22 @@ export function setDayCategory(inputDays, dayIndex, categoryId, value) {
 }
 
 export function trySetDayCategory(inputDays, dayIndex, categoryId, value) {
-  const candidateDays = setDayCategory(inputDays, dayIndex, categoryId, value);
+  if (!Number.isInteger(dayIndex) || dayIndex < 0 || dayIndex > 6 || !CATEGORY_IDS.includes(categoryId)) {
+    return { accepted: false, reason: "invalid-field", days: sanitizeDays(inputDays) };
+  }
+  const raw = String(value).trim();
+  const parsed = raw === "" ? 0 : Number(raw);
+  const valid = raw === "" || /^(?:\d+(?:\.\d*)?|\.\d+)$/.test(raw);
+  const clean = sanitizeDays(inputDays);
+  const attemptedTotal = roundHours(CATEGORY_IDS.reduce((sum, id) => sum + (id === categoryId ? parsed : clean[dayIndex][id]), 0));
+  if (!valid || !Number.isFinite(parsed) || parsed < 0 || parsed > DAY_HOURS || attemptedTotal > DAY_HOURS + 0.005) {
+    return { accepted: false, reason: valid && parsed >= 0 ? "over-limit" : "invalid-number", attemptedTotal, days: setDayCategory(inputDays, dayIndex, categoryId, 0) };
+  }
+  const candidateDays = setDayCategory(inputDays, dayIndex, categoryId, parsed);
   const candidateSummary = calculateSummary(candidateDays);
-  const attemptedTotal = candidateSummary.dayTotals[dayIndex];
+  const roundedTotal = candidateSummary.dayTotals[dayIndex];
 
-  if (attemptedTotal > DAY_HOURS + 0.005) {
+  if (roundedTotal > DAY_HOURS + 0.005) {
     return {
       accepted: false,
       attemptedTotal,

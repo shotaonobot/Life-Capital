@@ -21,4 +21,32 @@ jobs:
         with:
           node-version: 22
       - name: Run calculation tests and static checks
-        run: npm run verify
+        run: |
+          npm ci
+          npm run verify
+      - name: Check date and midnight behavior in Japan and across DST
+        run: |
+          TZ=Asia/Tokyo node --test tests/records.test.mjs tests/app.test.mjs
+          TZ=America/New_York node --test tests/records.test.mjs tests/app.test.mjs
+
+  ios-build:
+    runs-on: macos-latest
+    needs: verify
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: native/package-lock.json
+      - name: Prepare native assets and plugins
+        working-directory: native
+        run: |
+          npm ci
+          npm run sync
+      - name: Build for iOS Simulator without signing
+        working-directory: native
+        run: |
+          xcodebuild -version
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug -destination 'generic/platform=iOS Simulator' -derivedDataPath ios/DerivedData CODE_SIGNING_ALLOWED=NO build

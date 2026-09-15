@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFile, stat } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { execFileSync } from "node:child_process";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const dist = resolve(root, "dist");
@@ -11,7 +12,10 @@ const requiredFiles = [
   "dist/index.html",
   "dist/styles.css",
   "dist/app.js",
-  "dist/calculations.js"
+  "dist/calculations.js",
+  "dist/records.js",
+  "dist/platform.js",
+  "dist/privacy.html"
 ];
 
 for (const file of requiredFiles) {
@@ -42,14 +46,19 @@ for (const reference of localReferences) {
 
 const css = await readFile(resolve(dist, "styles.css"), "utf8");
 assert.match(css, /@media \(max-width: 700px\)/);
-assert.match(css, /min-width: 320px/);
+assert.match(css, /min-width:\s*320px/);
 
 const app = await readFile(resolve(dist, "app.js"), "utf8");
-assert.match(app, /localStorage\.setItem/);
+assert.match(await readFile(resolve(dist, "platform.js"), "utf8"), /localStorage\.setItem/);
 assert.match(app, /trySetDayCategory/);
 assert.match(app, /getWeekDates/);
 assert.match(app, /readonly aria-readonly="true"/);
 assert.match(app, /\.select\(\)/);
+for (const name of ["app.js", "records.js", "calculations.js", "platform.js"]) {
+  execFileSync(process.execPath, ["--check", resolve(dist, name)]);
+  const source = await readFile(resolve(dist, name), "utf8");
+  for (const match of source.matchAll(/from\s+"(\.\/[^"]+)"/g)) assert.ok((await stat(resolve(dist, match[1]))).isFile());
+}
 
 process.stdout.write(
   "Static verification passed: hosting config, responsive CSS, storage, and " +

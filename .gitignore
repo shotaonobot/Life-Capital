@@ -1,0 +1,11 @@
+node_modules/
+.sites-runtime/
+native/www/
+native/ios/App/App/public/
+native/ios/App/App/capacitor.config.json
+native/ios/App/App/config.xml
+native/ios/App/Pods/
+native/ios/**/xcuserdata/
+native/ios/DerivedData/
+*.log
+.DS_Store

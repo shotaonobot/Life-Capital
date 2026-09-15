@@ -1,0 +1,8 @@
+{
+  "appId": "com.shotaono.lifecapital",
+  "appName": "Life Capital",
+  "webDir": "www",
+  "backgroundColor": "#f3f6fa",
+  "ios": { "contentInset": "automatic", "preferredContentMode": "mobile" },
+  "plugins": { "LocalNotifications": { "presentationOptions": ["alert", "sound"] } }
+}

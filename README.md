@@ -1,36 +1,38 @@
 # Life Capital
 
-Life Capital turns one week — 168 hours — into a simple personal dashboard.
+自分のための時間を取り戻すための、端末内保存の時間記録アプリ。
 
-## What it does
+公開Web版：https://life-capital-sota.shouta-ono.chatgpt.site
 
-- Edit the same data from weekly totals or seven daily cards
-- Keep both input views synchronized
-- Judge investment rate of 20% or more
-- Judge waste rate of 5% or less
-- Judge sleep of 49 hours or more
-- Show missing or excess time against 168 hours
-- Save automatically in the current browser with localStorage
-- Work on desktop and mobile without external services
+## 今回の機能
 
-Investment and waste rates always use 168 hours as the denominator.
+- 日付別の記録と週の履歴。月〜日、今日の薄赤表示、日付変更への追従。
+- 曜日別の数値編集と読み取り専用の週合計。1日24h超過時は最後の入力を空欄にする。
+- 固定168時間で投資20%以上、浪費5%以下、睡眠49h以上を即時判定。未入力と達成を区別。
+- 分数でのまとめ入力、取り消し、任意のタイマー（再起動と日付またぎに対応）。
+- 間隔と時間帯を選べる声かけ。Webでは画面表示中のみ。iOS版にはローカル通知を実装。
+- 週の内訳・条件付き前週比較・一言の振り返り・大切にしたいこと。
+- ログイン不要の端末内保存、旧データ移行、バックアップの書き出し・復元・削除、任意共有。
 
-## Run locally
+## 開発と検証
 
-Serve the dist directory with any static server. For example:
+Node.js 22以上。
 
-    python3 -m http.server 4173 -d dist
+```sh
+npm ci
+npm run verify
+```
 
-Then open http://localhost:4173.
+`dist/` は手書きの静的Web資産。ビルドによる上書きはしない。純粋な計算・日付モデルに加え、Happy DOMで実際のHTMLとアプリコードを読み、入力・選択・保存・制限・日付変更・タイマー・声かけをテストする。DOMの自動テストは実ブラウザの描画確認やiPhone実機検証の代わりではない。
 
-## Verify
+`dist/records.js` が日付別のモデル、`dist/platform.js` がWebの保存・共有。iOSでは `native/platform.js` に差し替える。iOSの準備と残りの公開手順は [native/README.md](native/README.md) にある。
 
-Node.js 22 or later is required.
+## データ
 
-    npm run verify
+`life-capital:v2` に日付をキーとして保存。旧 `life-capital:v1` は最後に保存した日から週を推定して移行し、元データは残す。旧版には厳密な日付情報がなかったため推定週を画面で通知する。
 
-The verification suite covers threshold boundaries, weekly redistribution, daily editing, fixed-denominator rates, input normalization, hosting metadata, local asset references, local storage integration, and responsive CSS.
+保存失敗・破損は画面に表示する。破損データの自動上書きはしない。入力データはアプリのサーバーへ送らない。ブラウザ・端末間の自動同期はない。共有操作は週合計だけを共有し、自由記述は含めない。
 
-## Hosting
+## 方針と公開
 
-The existing ChatGPT Site project is bound in .openai/hosting.json. Keep its project_id unchanged so future updates reuse the same Life Capital Site.
+[合意した要件・調査・次の検証](docs/product-direction.md) を参照。既存SiteのID・slug・URL・public公開を再利用する。App Storeは未提出。ネイティブビルド・実機確認・Apple署名・TestFlight・審査を経て公開する。

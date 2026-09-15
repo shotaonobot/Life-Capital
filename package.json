@@ -1,6 +1,6 @@
 {
   "name": "life-capital",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
   "description": "168 hours personal time allocation dashboard",
@@ -12,5 +12,8 @@
   },
   "engines": {
     "node": ">=22"
+  },
+  "devDependencies": {
+    "happy-dom": "20.14.5"
   }
 }

@@ -5,9 +5,11 @@ import {
   WEEK_HOURS,
   calculateSummary,
   createDefaultDays,
+  getWeekDates,
   normalizeHours,
   redistributeCategory,
-  setDayCategory
+  setDayCategory,
+  trySetDayCategory
 } from "../dist/calculations.js";
 
 function blankDays() {
@@ -108,6 +110,39 @@ test("daily editing updates only the selected day and category", () => {
   assert.equal(updated[2].investment, 2.5);
   assert.equal(updated[1].investment, 0);
   assert.equal(original[2].investment, 0);
+});
+
+test("a daily edit over 24 hours is rejected and clears the last field", () => {
+  const original = createDefaultDays();
+  const result = trySetDayCategory(original, 0, "investment", 1);
+
+  assert.equal(result.accepted, false);
+  assert.equal(result.attemptedTotal, 25);
+  assert.equal(result.days[0].investment, 0);
+  assert.equal(calculateSummary(result.days).dayTotals[0], 24);
+});
+
+test("a daily edit at exactly 24 hours is accepted", () => {
+  const original = createDefaultDays();
+  const result = trySetDayCategory(original, 0, "consumption", 17);
+
+  assert.equal(result.accepted, true);
+  assert.equal(result.attemptedTotal, 24);
+  assert.equal(result.days[0].consumption, 17);
+});
+
+test("week dates run from Monday through Sunday across month boundaries", () => {
+  const dates = getWeekDates(new Date(2026, 8, 1, 12));
+
+  assert.deepEqual(dates.map((day) => day.dateKey), [
+    "2026-08-31",
+    "2026-09-01",
+    "2026-09-02",
+    "2026-09-03",
+    "2026-09-04",
+    "2026-09-05",
+    "2026-09-06"
+  ]);
 });
 
 test("invalid and out-of-range input is normalized safely", () => {

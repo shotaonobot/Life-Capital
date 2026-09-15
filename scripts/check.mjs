@@ -46,8 +46,10 @@ assert.match(css, /min-width: 320px/);
 
 const app = await readFile(resolve(dist, "app.js"), "utf8");
 assert.match(app, /localStorage\.setItem/);
-assert.match(app, /redistributeCategory/);
-assert.match(app, /setDayCategory/);
+assert.match(app, /trySetDayCategory/);
+assert.match(app, /getWeekDates/);
+assert.match(app, /readonly aria-readonly="true"/);
+assert.match(app, /\.select\(\)/);
 
 process.stdout.write(
   "Static verification passed: hosting config, responsive CSS, storage, and " +

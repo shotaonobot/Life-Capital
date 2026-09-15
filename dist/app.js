@@ -6,16 +6,19 @@ import {
   WEEK_HOURS,
   calculateSummary,
   createDefaultDays,
-  normalizeHours,
-  redistributeCategory,
+  getWeekDates,
+  localDateKey,
   sanitizeDays,
-  setDayCategory
+  setDayCategory,
+  trySetDayCategory
 } from "./calculations.js";
 
 const MODE_KEY = "life-capital:view-mode";
 const state = {
   days: loadDays(),
-  mode: loadMode()
+  mode: loadMode(),
+  dateKey: localDateKey(new Date()),
+  invalidDayFields: new Map()
 };
 
 const editorPanel = document.querySelector("#editor-panel");
@@ -209,13 +212,11 @@ function weeklyCard(category, total) {
         '<span class="category-dot" aria-hidden="true"></span>' +
         "<div><strong>" + category.label + "</strong><span>" + category.shortLabel + "</span></div>" +
       "</div>" +
-      '<div class="hour-control">' +
-        '<button class="adjust-button" type="button" data-adjust="-0.5" data-category="' + category.id + '" aria-label="' + category.label + 'を0.5時間減らす">−</button>' +
+      '<div class="hour-control is-readonly">' +
         '<div class="input-wrap">' +
-          '<input type="number" min="0" max="168" step="0.25" inputmode="decimal" data-weekly-input="' + category.id + '" value="' + formatNumber(total) + '" aria-label="' + category.label + 'の週合計時間">' +
+          '<input type="text" inputmode="none" data-weekly-input="' + category.id + '" value="' + formatNumber(total) + '" aria-label="' + category.label + 'の週合計時間" readonly aria-readonly="true">' +
           '<span class="input-unit">h</span>' +
         "</div>" +
-        '<button class="adjust-button" type="button" data-adjust="0.5" data-category="' + category.id + '" aria-label="' + category.label + 'を0.5時間増やす">＋</button>' +
       "</div>" +
       '<div class="category-meta"><span>' + target + '</span><span data-category-current="' + category.id + '">' + formatPercent(percentage) + "</span></div>" +
       '<div class="category-track"><span data-category-track="' + category.id + '" style="width:' + Math.min(percentage, 100) + '%"></span></div>' +
@@ -230,50 +231,18 @@ function renderWeekly(summary) {
     "</div>";
 
   editorPanel.querySelectorAll("[data-weekly-input]").forEach((input) => {
-    input.addEventListener("input", (event) => {
-      const rawValue = event.currentTarget.value;
-      event.currentTarget.classList.toggle("empty-input", rawValue.trim() === "");
-      if (rawValue.trim() === "") {
-        return;
-      }
-      const categoryId = event.currentTarget.dataset.weeklyInput;
-      state.days = redistributeCategory(state.days, categoryId, rawValue);
-      persist();
-      updateDashboard();
-    });
-
-    input.addEventListener("blur", (event) => {
-      const categoryId = event.currentTarget.dataset.weeklyInput;
-      if (event.currentTarget.value.trim() === "") {
-        state.days = redistributeCategory(state.days, categoryId, 0);
-        persist();
-        updateDashboard();
-      }
-      const current = calculateSummary(state.days).categoryTotals[categoryId];
-      event.currentTarget.value = formatNumber(current);
-      event.currentTarget.classList.remove("empty-input");
-    });
-  });
-
-  editorPanel.querySelectorAll("[data-adjust]").forEach((button) => {
-    button.addEventListener("click", (event) => {
-      const categoryId = event.currentTarget.dataset.category;
-      const delta = Number(event.currentTarget.dataset.adjust);
-      const current = calculateSummary(state.days).categoryTotals[categoryId];
-      state.days = redistributeCategory(
-        state.days,
-        categoryId,
-        normalizeHours(current + delta, WEEK_HOURS)
-      );
-      persist();
-      renderEditor();
-      updateDashboard();
-    });
+    input.addEventListener("focus", () => input.select());
   });
 }
 
 function dayCard(day, dayIndex, total) {
-  const stateClass = Math.abs(total - DAY_HOURS) < 0.005
+  const weekDates = getWeekDates();
+  const dateInfo = weekDates[dayIndex];
+  const isToday = dateInfo.dateKey === localDateKey(new Date());
+  const invalidCategory = state.invalidDayFields.get(dayIndex);
+  const stateClass = invalidCategory
+    ? " is-over"
+    : Math.abs(total - DAY_HOURS) < 0.005
     ? " is-complete"
     : total > DAY_HOURS
       ? " is-over"
@@ -281,14 +250,14 @@ function dayCard(day, dayIndex, total) {
   const progress = Math.min((total / DAY_HOURS) * 100, 100);
 
   return (
-    '<article class="day-card' + stateClass + '" data-day-card="' + dayIndex + '">' +
-      '<div class="day-header"><strong>' + DAY_LIST[dayIndex].label + '</strong><span class="day-total" data-day-total="' + dayIndex + '">' + formatHours(total) + " / 24h</span></div>" +
+    '<article class="day-card' + stateClass + (isToday ? " is-today" : "") + '" data-day-card="' + dayIndex + '">' +
+      '<div class="day-header"><div class="day-title"><strong>' + DAY_LIST[dayIndex].label + '</strong><time datetime="' + dateInfo.dateKey + '">' + dateInfo.dateLabel + (isToday ? "・今日" : "") + '</time></div><span class="day-total" data-day-total="' + dayIndex + '">' + (invalidCategory ? "24h超過・再入力" : formatHours(total) + " / 24h") + "</span></div>" +
       '<div class="day-inputs">' +
         CATEGORY_LIST.map((category) => (
           '<div class="day-field" style="' + categoryStyle(category) + '">' +
             "<label for=\"" + day.id + "-" + category.id + "\">" + category.label + "</label>" +
             '<div class="input-wrap">' +
-              '<input id="' + day.id + "-" + category.id + '" type="number" min="0" max="24" step="0.25" inputmode="decimal" data-day-index="' + dayIndex + '" data-day-category="' + category.id + '" value="' + formatNumber(day[category.id]) + '">' +
+              '<input id="' + day.id + "-" + category.id + '" type="number" min="0" max="24" step="0.25" inputmode="decimal" data-day-index="' + dayIndex + '" data-day-category="' + category.id + '" value="' + (invalidCategory === category.id ? "" : formatNumber(day[category.id])) + '"' + (invalidCategory === category.id ? ' class="empty-input" aria-invalid="true"' : "") + '>' +
               '<span class="input-unit">h</span>' +
             "</div>" +
           "</div>"
@@ -306,6 +275,9 @@ function renderDaily(summary) {
     "</div>";
 
   editorPanel.querySelectorAll("[data-day-category]").forEach((input) => {
+    input.addEventListener("focus", () => input.select());
+    input.addEventListener("click", () => input.select());
+
     input.addEventListener("input", (event) => {
       const rawValue = event.currentTarget.value;
       event.currentTarget.classList.toggle("empty-input", rawValue.trim() === "");
@@ -314,7 +286,22 @@ function renderDaily(summary) {
       }
       const dayIndex = Number(event.currentTarget.dataset.dayIndex);
       const categoryId = event.currentTarget.dataset.dayCategory;
-      state.days = setDayCategory(state.days, dayIndex, categoryId, rawValue);
+      const result = trySetDayCategory(state.days, dayIndex, categoryId, rawValue);
+
+      if (!result.accepted) {
+        state.days = result.days;
+        state.invalidDayFields.set(dayIndex, categoryId);
+        event.currentTarget.value = "";
+        event.currentTarget.classList.add("empty-input");
+        event.currentTarget.setAttribute("aria-invalid", "true");
+        persist();
+        updateDashboard();
+        return;
+      }
+
+      state.invalidDayFields.delete(dayIndex);
+      event.currentTarget.removeAttribute("aria-invalid");
+      state.days = result.days;
       persist();
       updateDashboard();
     });
@@ -322,10 +309,17 @@ function renderDaily(summary) {
     input.addEventListener("blur", (event) => {
       const dayIndex = Number(event.currentTarget.dataset.dayIndex);
       const categoryId = event.currentTarget.dataset.dayCategory;
+      const wasRejected = state.invalidDayFields.get(dayIndex) === categoryId;
       if (event.currentTarget.value.trim() === "") {
         state.days = setDayCategory(state.days, dayIndex, categoryId, 0);
+        if (!wasRejected) {
+          state.invalidDayFields.delete(dayIndex);
+        }
         persist();
         updateDashboard();
+      }
+      if (wasRejected) {
+        return;
       }
       event.currentTarget.value = formatNumber(state.days[dayIndex][categoryId]);
       event.currentTarget.classList.remove("empty-input");
@@ -361,10 +355,11 @@ function updateEditorStats(summary) {
     if (!card || !totalElement || !trackElement) {
       return;
     }
-    card.classList.toggle("is-complete", Math.abs(total - DAY_HOURS) < 0.005);
-    card.classList.toggle("is-over", total > DAY_HOURS + 0.005);
-    totalElement.textContent = formatHours(total) + " / 24h";
-    trackElement.style.width = Math.min((total / DAY_HOURS) * 100, 100) + "%";
+    const hasInvalidField = state.invalidDayFields.has(dayIndex);
+    card.classList.toggle("is-complete", !hasInvalidField && Math.abs(total - DAY_HOURS) < 0.005);
+    card.classList.toggle("is-over", hasInvalidField || total > DAY_HOURS + 0.005);
+    totalElement.textContent = hasInvalidField ? "24h超過・再入力" : formatHours(total) + " / 24h";
+    trackElement.style.width = hasInvalidField ? "100%" : Math.min((total / DAY_HOURS) * 100, 100) + "%";
   });
 }
 
@@ -412,6 +407,15 @@ window.addEventListener("storage", (event) => {
     updateDashboard();
   }
 });
+
+window.setInterval(() => {
+  const nextDateKey = localDateKey(new Date());
+  if (nextDateKey !== state.dateKey) {
+    state.dateKey = nextDateKey;
+    renderEditor();
+    updateDashboard();
+  }
+}, 60000);
 
 renderEditor();
 updateDashboard();

@@ -142,6 +142,50 @@ export function setDayCategory(inputDays, dayIndex, categoryId, value) {
   ));
 }
 
+export function trySetDayCategory(inputDays, dayIndex, categoryId, value) {
+  const candidateDays = setDayCategory(inputDays, dayIndex, categoryId, value);
+  const candidateSummary = calculateSummary(candidateDays);
+  const attemptedTotal = candidateSummary.dayTotals[dayIndex];
+
+  if (attemptedTotal > DAY_HOURS + 0.005) {
+    return {
+      accepted: false,
+      attemptedTotal,
+      days: setDayCategory(inputDays, dayIndex, categoryId, 0)
+    };
+  }
+
+  return {
+    accepted: true,
+    attemptedTotal,
+    days: candidateDays
+  };
+}
+
+export function localDateKey(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return year + "-" + month + "-" + day;
+}
+
+export function getWeekDates(referenceDate = new Date()) {
+  const weekStart = new Date(referenceDate);
+  weekStart.setHours(0, 0, 0, 0);
+  const daysFromMonday = (weekStart.getDay() + 6) % 7;
+  weekStart.setDate(weekStart.getDate() - daysFromMonday);
+
+  return DAY_LIST.map((day, index) => {
+    const date = new Date(weekStart);
+    date.setDate(weekStart.getDate() + index);
+    return {
+      ...day,
+      dateKey: localDateKey(date),
+      dateLabel: (date.getMonth() + 1) + "/" + date.getDate()
+    };
+  });
+}
+
 export function redistributeCategory(inputDays, categoryId, nextTotal) {
   const days = sanitizeDays(inputDays);
   if (!CATEGORY_IDS.includes(categoryId)) {

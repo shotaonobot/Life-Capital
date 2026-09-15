@@ -540,6 +540,16 @@ a:focus-visible {
   margin-top: 18px;
 }
 
+.hour-control.is-readonly {
+  grid-template-columns: minmax(100px, 1fr);
+}
+
+.hour-control.is-readonly input {
+  color: #4f5968;
+  background: #f1f4f8;
+  cursor: default;
+}
+
 .adjust-button {
   min-height: 48px;
   border: 1px solid var(--line);
@@ -622,11 +632,21 @@ a:focus-visible {
 
 .day-card.is-over {
   border-color: rgba(239, 106, 91, 0.35);
-  background: rgba(239, 106, 91, 0.035);
+  background: #ffe9e6;
 }
 
 .day-card.is-complete {
   border-color: rgba(10, 166, 120, 0.25);
+}
+
+.day-card.is-today {
+  border-color: rgba(239, 106, 91, 0.4);
+  background: #fff1ef;
+}
+
+.day-card.is-today.is-over {
+  border-color: var(--danger);
+  background: #ffe0dc;
 }
 
 .day-header {
@@ -639,6 +659,17 @@ a:focus-visible {
 
 .day-header strong {
   font-size: 20px;
+}
+
+.day-title {
+  display: grid;
+  gap: 2px;
+}
+
+.day-title time {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 750;
 }
 
 .day-total {
